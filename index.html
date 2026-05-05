@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hostel Life</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Noto+Serif+JP:wght@300;400;600&family=DM+Sans:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* =============================================
+   DESIGN TOKENS — edit themes here
+   ============================================= */
+:root {
+  --bg:          #faf8f5;
+  --bg2:         #f2ede6;
+  --surface:     #ffffff;
+  --border:      #e0d8ce;
+  --text:        #1a1714;
+  --text-sub:    #6b6258;
+  --accent:      #9b6b47;
+  --accent2:     #c4956a;
+  --accent-pale: #f0e8de;
+  --nav-bg:      rgba(250,248,245,0.92);
+  --shadow:      0 4px 24px rgba(60,40,20,0.10);
+  --shadow-sm:   0 2px 8px rgba(60,40,20,0.07);
+  --radius:      4px;
+  --radius-lg:   10px;
+  --font-en:     'Cormorant Garamond', serif;
+  --font-jp:     'Noto Serif JP', serif;
+  --font-body:   'DM Sans', 'Noto Sans JP', sans-serif;
+  --transition:  0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+[data-theme="dark"] {
+  --bg:          #141210;
+  --bg2:         #1d1a17;
+  --surface:     #231f1b;
+  --border:      #3a3028;
+  --text:        #f0ece6;
+  --text-sub:    #a09080;
+  --accent:      #d4956a;
+  --accent2:     #e8b890;
+  --accent-pale: #2a2018;
+  --nav-bg:      rgba(20,18,16,0.93);
+  --shadow:      0 4px 24px rgba(0,0,0,0.4);
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.3);
+}
+
+[data-theme="mono"] {
+  --bg:          #f7f7f7;
+  --bg2:         #efefef;
+  --surface:     #ffffff;
+  --border:      #d0d0d0;
+  --text:        #111111;
+  --text-sub:    #555555;
+  --accent:      #222222;
+  --accent2:     #555555;
+  --accent-pale: #ebebeb;
+  --nav-bg:      rgba(247,247,247,0.94);
+  --shadow:      0 4px 24px rgba(0,0,0,0.08);
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* =============================================
+   BASE
+   ============================================= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  transition: background var(--transition), color var(--transition);
+  min-height: 100vh;
+}
+
+body.lang-ja { font-family: 'Noto Sans JP', 'DM Sans', sans-serif; }
+
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; }
+
+/* =============================================
+   LAYOUT
+   ============================================= */
+.page { display: none; }
+.page.active { display: block; }
+
+.container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+.container--narrow { max-width: 760px; }
+
+/* =============================================
+   NAV
+   ============================================= */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
+}
+
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px; max-width: 1160px; margin: 0 auto; padding: 0 24px;
+}
+
+.nav-logo {
+  font-family: var(--font-en);
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  cursor: pointer;
+}
+.nav-logo span { color: var(--accent); }
+
+.nav-links {
+  display: flex; align-items: center; gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  transition: color var(--transition);
+  cursor: pointer;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+.nav-controls {
+  display: flex; align-items: center; gap: 8px;
+}
+
+.ctrl-btn {
+  display: flex; align-items: center; justify-content: center;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-sub);
+  background: var(--surface);
+  transition: all var(--transition);
+}
+.ctrl-btn:hover { color: var(--accent); border-color: var(--accent); }
+.ctrl-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+.theme-picker {
+  position: relative;
+}
+.theme-menu {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 6px;
+  display: none;
+  min-width: 120px;
+  z-index: 200;
+}
+.theme-menu.open { display: block; }
+.theme-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--transition);
+  width: 100%;
+  text-align: left;
+}
+.theme-option:hover { background: var(--accent-pale); }
+.theme-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* hamburger */
+.hamburger {
+  display: none;
+  flex-direction: column; gap: 5px;
+  padding: 4px;
+  cursor: pointer;
+}
+.hamburger span {
+  display: block; width: 22px; height: 1.5px;
+  background: var(--text);
+  transition: all var(--transition);
+}
+
+.mobile-menu {
+  display: none;
+  position: fixed; top: 60px; left: 0; right: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px 24px;
+  z-index: 99;
+  flex-direction: column; gap: 4px;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a {
+  padding: 12px 0;
+  font-size: 15px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+.mobile-menu a:last-of-type { border-bottom: none; }
+.mobile-menu a:hover { color: var(--accent); }
+.mobile-controls {
+  display: flex; gap: 8px; padding-top: 16px; flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .nav-links, .nav-controls { display: none; }
+  .hamburger { display: flex; }
+}
+
+/* =============================================
+   HERO
+   ============================================= */
+.hero {
+  height: 92vh;
+  min-height: 560px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg2);
+}
+
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 60%, rgba(155,107,71,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 30%, rgba(196,149,106,0.12) 0%, transparent 50%);
+}
+
+.hero-grid {
+  position: absolute; inset: 0; opacity: 0.04;
+  background-image: linear-gradient(var(--text) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--text) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.hero-content {
+  text-align: center;
+  position: relative; z-index: 1;
+  padding: 20px;
+  animation: fadeUp 0.9s ease both;
+}
+
+.hero-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.hero-title {
+  font-family: var(--font-en);
+  font-size: clamp(44px, 7vw, 88px);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+.hero-title em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero-sub {
+  font-size: 15px;
+  color: var(--text-sub);
+  max-width: 460px;
+  margin: 0 auto 40px;
+  line-height: 1.8;
+}
+
+.hero-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--accent);
+  color: white;
+  padding: 14px 32px;
+  border-radius: 2px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: all var(--transition);
+}
+.hero-cta:hover { background: var(--accent2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(155,107,71,0.3); }
+.hero-cta svg { width: 16px; height: 16px; }
+
+.hero-scroll {
+  position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--text-sub); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  animation: bounce 2s ease infinite;
+}
+.hero-scroll::after {
+  content: ''; display: block; width: 1px; height: 40px;
+  background: linear-gradient(to bottom, var(--accent), transparent);
+}
+
+/* =============================================
+   LISTING PAGE
+   ============================================= */
+.listing-header {
+  padding: 100px 0 48px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.listing-header h1 {
+  font-family: var(--font-en);
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+
+.listing-header p {
+  color: var(--text-sub); font-size: 14px;
+}
+
+.area-tabs {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.area-tab {
+  padding: 7px 18px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text-sub);
+  background: var(--surface);
+  transition: all var(--transition);
+  cursor: pointer;
+}
+.area-tab:hover { color: var(--accent); border-color: var(--accent); }
+.area-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+.listing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 28px;
+  padding: 48px 0 80px;
+}
+
+.property-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+.property-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow);
+  border-color: var(--accent2);
+}
+
+.card-thumb {
+  aspect-ratio: 16/10;
+  overflow: hidden;
+  position: relative;
+}
+.card-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.property-card:hover .card-thumb img { transform: scale(1.05); }
+
+.card-badge {
+  position: absolute; top: 12px; left: 12px;
+  background: var(--accent);
+  color: white;
+  font-size: 11px; font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+.card-body { padding: 20px; }
+
+.card-area {
+  font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent); font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.card-name {
+  font-family: var(--font-en);
+  font-size: 20px; font-weight: 400;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.card-meta {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-bottom: 14px;
+}
+.card-meta-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--text-sub);
+}
+.card-meta-item svg { width: 13px; height: 13px; opacity: 0.6; }
+
+.card-types {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.type-pill {
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+/* =============================================
+   DETAIL PAGE
+   ============================================= */
+.detail-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 80px 0 24px;
+  font-size: 13px; color: var(--text-sub);
+  cursor: pointer;
+  transition: color var(--transition);
+  letter-spacing: 0.04em;
+}
+.detail-back:hover { color: var(--accent); }
+.detail-back svg { width: 14px; height: 14px; }
+
+.detail-hero {
+  aspect-ratio: 21/9;
+  max-height: 500px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 48px;
+}
+.detail-hero img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 48px;
+  padding-bottom: 80px;
+}
+
+@media (max-width: 860px) {
+  .detail-layout { grid-template-columns: 1fr; }
+}
+
+.detail-area-label {
+  font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 10px; font-weight: 500;
+}
+
+.detail-title {
+  font-family: var(--font-en);
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 300;
+  line-height: 1.15;
+  margin-bottom: 24px;
+}
+
+.detail-meta-row {
+  display: flex; flex-wrap: wrap; gap: 20px;
+  padding: 20px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+.detail-meta-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px;
+}
+.detail-meta-item strong { color: var(--text); font-weight: 500; }
+.detail-meta-item span { color: var(--text-sub); }
+
+.detail-desc {
+  font-size: 15px; line-height: 1.85;
+  color: var(--text);
+  margin-bottom: 32px;
+}
+
+.detail-features h3 {
+  font-size: 12px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-sub);
+  margin-bottom: 14px;
+}
+.feature-list {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  list-style: none;
+}
+.feature-list li {
+  padding: 6px 14px;
+  background: var(--accent-pale);
+  border-radius: 20px;
+  font-size: 13px; color: var(--text);
+}
+
+/* sidebar */
+.detail-sidebar {}
+
+.booking-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  position: sticky; top: 80px;
+}
+
+.booking-card h3 {
+  font-family: var(--font-en);
+  font-size: 22px; font-weight: 400;
+  margin-bottom: 6px;
+}
+.booking-card .price-note {
+  font-size: 12px; color: var(--text-sub);
+  margin-bottom: 20px;
+}
+
+.room-types {
+  margin-bottom: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.room-type-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+.room-type-row span:last-child { color: var(--accent); font-weight: 500; }
+
+.book-btn {
+  display: block; width: 100%;
+  background: var(--accent);
+  color: white;
+  padding: 15px;
+  border-radius: var(--radius);
+  font-size: 14px; font-weight: 500;
+  letter-spacing: 0.06em;
+  text-align: center;
+  transition: all var(--transition);
+  text-transform: uppercase;
+}
+.book-btn:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(155,107,71,0.3); }
+
+.booking-note {
+  margin-top: 14px;
+  font-size: 11px; color: var(--text-sub);
+  text-align: center; line-height: 1.6;
+}
+
+.gallery-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 32px 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.gallery-strip img {
+  aspect-ratio: 4/3;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.gallery-strip img:hover { transform: scale(1.03); }
+
+/* =============================================
+   ABOUT / CONTACT
+   ============================================= */
+.about-header {
+  padding: 120px 0 60px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+
+.about-header h1 {
+  font-family: var(--font-en);
+  font-size: clamp(34px, 5vw, 60px);
+  font-weight: 300;
+  margin-bottom: 16px;
+  letter-spacing: -0.01em;
+}
+
+.about-header p { color: var(--text-sub); max-width: 600px; font-size: 15px; line-height: 1.8; }
+
+.about-body {
+  padding: 64px 0 80px;
+}
+
+.about-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  margin-bottom: 64px;
+  align-items: center;
+}
+.about-section:nth-child(even) .about-text { order: 2; }
+.about-section:nth-child(even) .about-img  { order: 1; }
+
+@media (max-width: 680px) {
+  .about-section { grid-template-columns: 1fr; }
+  .about-section:nth-child(even) .about-text,
+  .about-section:nth-child(even) .about-img { order: unset; }
+}
+
+.about-text h2 {
+  font-family: var(--font-en);
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 300;
+  margin-bottom: 16px;
+}
+.about-text p { color: var(--text-sub); line-height: 1.85; font-size: 14px; }
+
+.about-img {
+  aspect-ratio: 4/3;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg2);
+}
+.about-img img { width: 100%; height: 100%; object-fit: cover; }
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 56px 0;
+}
+
+/* contact */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+@media (max-width: 640px) {
+  .contact-grid { grid-template-columns: 1fr; }
+}
+
+.contact-info h3 {
+  font-family: var(--font-en);
+  font-size: 22px; font-weight: 400;
+  margin-bottom: 18px;
+}
+.contact-item {
+  display: flex; gap: 12px;
+  margin-bottom: 16px;
+  font-size: 14px; color: var(--text-sub);
+}
+.contact-item strong { color: var(--text); font-size: 12px; display: block; margin-bottom: 2px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+.contact-form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+}
+.contact-form-card h3 {
+  font-family: var(--font-en);
+  font-size: 22px; font-weight: 400;
+  margin-bottom: 20px;
+}
+
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-sub);
+  margin-bottom: 6px;
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  transition: border-color var(--transition);
+  outline: none;
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus { border-color: var(--accent); }
+.form-group textarea { resize: vertical; min-height: 100px; }
+
+.form-submit {
+  width: 100%;
+  background: var(--accent);
+  color: white;
+  padding: 13px;
+  border-radius: var(--radius);
+  font-size: 13px; font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all var(--transition);
+}
+.form-submit:hover { background: var(--accent2); }
+
+/* =============================================
+   FOOTER
+   ============================================= */
+footer {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 48px 0 24px;
+}
+
+.footer-inner {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 40px;
+}
+
+@media (max-width: 640px) {
+  .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+}
+
+.footer-brand h3 {
+  font-family: var(--font-en);
+  font-size: 22px; font-weight: 300;
+  margin-bottom: 10px;
+}
+.footer-brand p { font-size: 13px; color: var(--text-sub); line-height: 1.7; max-width: 300px; }
+
+footer h4 {
+  font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-sub);
+  margin-bottom: 14px;
+}
+footer ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+footer ul li a {
+  font-size: 13px; color: var(--text-sub);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+footer ul li a:hover { color: var(--accent); }
+
+.footer-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: var(--text-sub);
+  flex-wrap: wrap; gap: 8px;
+}
+
+/* =============================================
+   ANIMATIONS
+   ============================================= */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(-6px); }
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.7s ease forwards;
+}
+
+/* stagger */
+.fade-in:nth-child(1) { animation-delay: 0.05s; }
+.fade-in:nth-child(2) { animation-delay: 0.12s; }
+.fade-in:nth-child(3) { animation-delay: 0.19s; }
+.fade-in:nth-child(4) { animation-delay: 0.26s; }
+.fade-in:nth-child(5) { animation-delay: 0.33s; }
+.fade-in:nth-child(6) { animation-delay: 0.40s; }
+
+/* section title */
+.section-eyebrow {
+  font-size: 11px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 10px; font-weight: 500;
+}
+.section-title {
+  font-family: var(--font-en);
+  font-size: clamp(26px, 3.5vw, 40px);
+  font-weight: 300; margin-bottom: 8px;
+}
+.section-sub { color: var(--text-sub); font-size: 14px; max-width: 500px; }
+
+/* =============================================
+   UTILS
+   ============================================= */
+.mt-80 { margin-top: 80px; }
+.pt-80 { padding-top: 80px; }
+.mb-0 { margin-bottom: 0; }
+
+.hidden { display: none !important; }
+
+/* placeholder image */
+.img-placeholder {
+  background: linear-gradient(135deg, var(--bg2) 0%, var(--accent-pale) 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-sub); font-size: 13px;
+}
+</style>
+</head>
+
+<body class="lang-ja">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo" onclick="showPage('home')">Hostel<span>Life</span></div>
+
+    <ul class="nav-links">
+      <li><a onclick="showPage('home')"     data-i18n="nav_home">Home</a></li>
+      <li><a onclick="showPage('listing')"  data-i18n="nav_list">宿泊施設</a></li>
+      <li><a onclick="showPage('about')"    data-i18n="nav_about">About</a></li>
+      <li><a onclick="showPage('contact')"  data-i18n="nav_contact">お問い合わせ</a></li>
+    </ul>
+
+    <div class="nav-controls">
+      <!-- language toggle -->
+      <button class="ctrl-btn" id="langBtn" onclick="toggleLang()">EN</button>
+
+      <!-- theme picker -->
+      <div class="theme-picker">
+        <button class="ctrl-btn" onclick="toggleThemeMenu()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+          </svg>
+          &nbsp;<span data-i18n="theme">テーマ</span>
+        </button>
+        <div class="theme-menu" id="themeMenu">
+          <button class="theme-option" onclick="setTheme('light')">
+            <span class="theme-dot" style="background:#f0e8de;border:1px solid #ccc;"></span>
+            <span data-i18n="theme_light">ライト</span>
+          </button>
+          <button class="theme-option" onclick="setTheme('dark')">
+            <span class="theme-dot" style="background:#1d1a17;border:1px solid #555;"></span>
+            <span data-i18n="theme_dark">ダーク</span>
+          </button>
+          <button class="theme-option" onclick="setTheme('mono')">
+            <span class="theme-dot" style="background:#eee;border:1px solid #aaa;"></span>
+            <span data-i18n="theme_mono">モノ</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- hamburger -->
+    <div class="hamburger" onclick="toggleMobileMenu()" id="hamburger">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a onclick="showPage('home');closeMobileMenu()"   data-i18n="nav_home">Home</a>
+  <a onclick="showPage('listing');closeMobileMenu()" data-i18n="nav_list">宿泊施設</a>
+  <a onclick="showPage('about');closeMobileMenu()"   data-i18n="nav_about">About</a>
+  <a onclick="showPage('contact');closeMobileMenu()" data-i18n="nav_contact">お問い合わせ</a>
+  <div class="mobile-controls">
+    <button class="ctrl-btn" id="langBtnMobile" onclick="toggleLang()">EN</button>
+    <button class="ctrl-btn" onclick="setTheme('light')" data-i18n="theme_light">ライト</button>
+    <button class="ctrl-btn" onclick="setTheme('dark')"  data-i18n="theme_dark">ダーク</button>
+    <button class="ctrl-btn" onclick="setTheme('mono')"  data-i18n="theme_mono">モノ</button>
+  </div>
+</div>
+
+
+<!-- ==================== PAGE: HOME ==================== -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow" data-i18n="hero_eyebrow">Hostel Life</p>
+      <h1 class="hero-title" data-i18n="hero_title_html">新しい人と<em>地域</em>に、<br>出会う入り口</h1>
+      <p class="hero-sub" data-i18n="hero_sub">個性豊かな宿泊施設をご紹介します。ドミトリーから個室まで、あなたのスタイルに合わせた滞在をどうぞ。</p>
+      <a class="hero-cta" onclick="showPage('listing')">
+        <span data-i18n="hero_cta">施設一覧を見る</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="hero-scroll">
+      <span>scroll</span>
+    </div>
+  </section>
+
+  <!-- featured section -->
+  <section style="padding: 80px 0;">
+    <div class="container">
+      <p class="section-eyebrow" data-i18n="featured_eyebrow">Featured</p>
+      <h2 class="section-title" data-i18n="featured_title">おすすめの施設</h2>
+      <p class="section-sub" data-i18n="featured_sub" style="margin-bottom:40px;">各エリアの人気施設をピックアップしました。</p>
+
+      <div class="listing-grid" id="featuredGrid"></div>
+
+      <div style="text-align:center; margin-top:40px;">
+        <a class="hero-cta" onclick="showPage('listing')">
+          <span data-i18n="view_all">すべて見る</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<!-- ==================== PAGE: LISTING ==================== -->
+<div class="page" id="page-listing">
+  <div class="listing-header">
+    <div class="container">
+      <h1 data-i18n="list_title">宿泊施設一覧</h1>
+      <p data-i18n="list_sub">東京の個性豊かなゲストハウス・ホステルをエリアから探せます</p>
+    </div>
+  </div>
+  <div class="container">
+    <div class="area-tabs" id="areaTabs"></div>
+    <div class="listing-grid" id="listingGrid"></div>
+  </div>
+</div>
+
+
+<!-- ==================== PAGE: DETAIL ==================== -->
+<div class="page" id="page-detail">
+  <div class="container container--narrow" style="max-width:1100px;" id="detailContent"></div>
+</div>
+
+
+<!-- ==================== PAGE: ABOUT ==================== -->
+<div class="page" id="page-about">
+  <div class="about-header">
+    <div class="container">
+      <p class="section-eyebrow" data-i18n="about_eyebrow">Our Story</p>
+      <h1 data-i18n="about_title">東京に根ざした<br>ゲストハウス文化を</h1>
+      <p data-i18n="about_desc">Hostel Lifeは、浅草・上野・蔵前を中心とした下町エリアで、旅人が本物の東京を体験できる場所を提供しています。</p>
+    </div>
+  </div>
+  <div class="about-body">
+    <div class="container">
+      <div class="about-section">
+        <div class="about-text">
+          <h2 data-i18n="about_s1_h">下町の魅力を、そのままに</h2>
+          <p data-i18n="about_s1_p">古くからの商店街や神社仏閣が残る浅草・蔵前エリア。その雰囲気を壊さず、むしろ引き立てるような宿泊施設を大切に選んでいます。建築・インテリア・スタッフのこだわりが、ここでしか味わえない滞在を生みます。</p>
+        </div>
+        <div class="about-img img-placeholder">
+          <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80" alt="Asakusa" loading="lazy">
+        </div>
+      </div>
+      <div class="about-section">
+        <div class="about-img img-placeholder">
+          <img src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80" alt="Community" loading="lazy">
+        </div>
+        <div class="about-text">
+          <h2 data-i18n="about_s2_h">旅人同士がつながる場所</h2>
+          <p data-i18n="about_s2_p">ゲストハウスは単なる宿ではありません。世界中から集まる旅人、地域に暮らす人々、スタッフの交流が生まれる場です。共用スペースや共用キッチン、定期的なイベントを通じて、忘れられない出会いが生まれます。</p>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div style="text-align:center; max-width: 600px; margin: 0 auto 56px;">
+        <p class="section-eyebrow" data-i18n="value_eyebrow">Values</p>
+        <h2 class="section-title" data-i18n="value_title">私たちが大切にすること</h2>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:24px; margin-bottom:64px;">
+        <div style="padding:24px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);">
+          <div style="font-size:26px; margin-bottom:12px;">🏯</div>
+          <h3 style="font-family:var(--font-en); font-size:18px; font-weight:400; margin-bottom:8px;" data-i18n="val1_h">Local First</h3>
+          <p style="font-size:13px; color:var(--text-sub); line-height:1.7;" data-i18n="val1_p">地域の商店・飲食店・文化と連携し、本物の東京体験を届けます。</p>
+        </div>
+        <div style="padding:24px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);">
+          <div style="font-size:26px; margin-bottom:12px;">✨</div>
+          <h3 style="font-family:var(--font-en); font-size:18px; font-weight:400; margin-bottom:8px;" data-i18n="val2_h">Clean & Comfort</h3>
+          <p style="font-size:13px; color:var(--text-sub); line-height:1.7;" data-i18n="val2_p">清潔さと快適さは最低限のおもてなし。細部まで丁寧に管理しています。</p>
+        </div>
+        <div style="padding:24px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);">
+          <div style="font-size:26px; margin-bottom:12px;">🌏</div>
+          <h3 style="font-family:var(--font-en); font-size:18px; font-weight:400; margin-bottom:8px;" data-i18n="val3_h">Open to All</h3>
+          <p style="font-size:13px; color:var(--text-sub); line-height:1.7;" data-i18n="val3_p">言語・国籍・バックグラウンドに関わらず、すべての旅人を歓迎します。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==================== PAGE: CONTACT ==================== -->
+<div class="page" id="page-contact">
+  <div class="about-header">
+    <div class="container">
+      <p class="section-eyebrow" data-i18n="contact_eyebrow">Contact</p>
+      <h1 data-i18n="contact_title">お問い合わせ</h1>
+      <p data-i18n="contact_sub">ご不明な点・宿泊についてのご相談はお気軽にどうぞ。</p>
+    </div>
+  </div>
+  <div class="container" style="padding-top:56px; padding-bottom:80px;">
+    <div class="contact-grid">
+      <div class="contact-info">
+        <h3 data-i18n="contact_info_h">連絡先</h3>
+        <div class="contact-item">
+          <div>
+            <strong data-i18n="c_email">Email</strong>
+            <span>info@tokyostays.example.com</span>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div>
+            <strong data-i18n="c_tel">Tel</strong>
+            <span>03-XXXX-XXXX</span>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div>
+            <strong data-i18n="c_addr">Address</strong>
+            <span data-i18n="c_addr_val">〒111-0032 東京都台東区浅草X-X-X</span>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div>
+            <strong data-i18n="c_hours">受付時間</strong>
+            <span data-i18n="c_hours_val">8:00〜22:00（年中無休）</span>
+          </div>
+        </div>
+
+        <div style="margin-top:28px; padding:20px; background:var(--accent-pale); border-radius:var(--radius-lg);">
+          <p style="font-size:13px; color:var(--text-sub); line-height:1.8;" data-i18n="contact_note">宿泊予約は各施設の詳細ページからGoogleフォームにてお受けしています。</p>
+        </div>
+      </div>
+
+      <div class="contact-form-card">
+        <h3 data-i18n="form_title">メッセージを送る</h3>
+        <div class="form-group">
+          <label data-i18n="form_name">お名前</label>
+          <input type="text" placeholder="山田 太郎">
+        </div>
+        <div class="form-group">
+          <label data-i18n="form_email">メールアドレス</label>
+          <input type="email" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label data-i18n="form_subject">件名</label>
+          <select>
+            <option data-i18n="fs_booking">宿泊について</option>
+            <option data-i18n="fs_other">その他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="form_msg">メッセージ</label>
+          <textarea placeholder="ご質問・ご相談をどうぞ"></textarea>
+        </div>
+        <button class="form-submit" data-i18n="form_send">送信する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h3>Hostel<span style="color:var(--accent)">Life</span></h3>
+        <p data-i18n="footer_desc">東京・下町エリアのゲストハウスをつなぐプラットフォーム。旅人と東京を、もっと近くに。</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer_nav">Navigation</h4>
+        <ul>
+          <li><a onclick="showPage('home')"    data-i18n="nav_home">Home</a></li>
+          <li><a onclick="showPage('listing')" data-i18n="nav_list">宿泊施設</a></li>
+          <li><a onclick="showPage('about')"   data-i18n="nav_about">About</a></li>
+          <li><a onclick="showPage('contact')" data-i18n="nav_contact">お問い合わせ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 data-i18n="footer_area">エリア</h4>
+        <ul id="footerAreas"></ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Hostel Life. All rights reserved.</span>
+      <span data-i18n="footer_copy">プライバシーポリシー</span>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+/* =============================================
+   ★ DATA — ここを編集して施設情報を管理 ★
+   ============================================= */
+const PROPERTIES = [
+  {
+    id: "little-japan",
+    area: "asakusabashi",
+    featured: true,
+    coverPhoto: "https://storage.googleapis.com/production-os-assets/assets/c3ed5bf8-66c8-4c21-9baf-e30330671d45?w=800&q=80",
+    photos: [
+      "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600&q=80",
+      "https://images.unsplash.com/photo-1631049035182-249067d7618e?w=600&q=80",
+      "https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80",
+    ],
+    name: { ja: "Little Japan", en: "Little Japan" },
+    tagline: { ja: "浅草の中心にある、小さな日本", en: "A little piece of Japan in Asakusa" },
+    checkin:  "15:00",
+    checkout: "11:00",
+    location: { ja: "台東区浅草", en: "Asakusa, Taito-ku" },
+    roomTypes: [
+      { label: { ja: "ドミトリー（混合）", en: "Mixed Dorm" }, price: { ja: "¥2,800〜", en: "From ¥2,800" } },
+      { label: { ja: "ドミトリー（女性専用）", en: "Female Dorm" }, price: { ja: "¥3,000〜", en: "From ¥3,000" } },
+      { label: { ja: "個室（ツイン）", en: "Private Twin" }, price: { ja: "¥8,500〜", en: "From ¥8,500" } },
+    ],
+    description: {
+      ja: "雷門から徒歩5分。昔ながらの問屋街の一角にある、浅草を代表するゲストハウスです。木の温もりを感じる内装と、スタッフの丁寧な対応が旅人に人気です。共用キッチン・シャワー・ランドリーすべて完備。",
+      en: "A 5-minute walk from Kaminarimon Gate, Little Japan is a beloved guesthouse nestled in Asakusa's historic wholesale district. Warm wooden interiors and attentive staff make every guest feel at home. Fully equipped with shared kitchen, showers, and laundry."
+    },
+    features: {
+      ja: ["無料Wi-Fi", "共用キッチン", "ランドリー", "荷物預かり", "多言語スタッフ", "自転車レンタル"],
+      en: ["Free Wi-Fi", "Shared Kitchen", "Laundry", "Luggage Storage", "Multilingual Staff", "Bike Rental"]
+    },
+    bookingUrl: "https://forms.gle/XXXXXXXXXX",
+  },
+  {
+    id: "xyzstay",
+    area: "asakusa",
+    featured: true,
+    coverPhoto: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&q=80",
+    photos: [
+      "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=600&q=80",
+      "https://images.unsplash.com/photo-1631049552057-403cdb8f0658?w=600&q=80",
+      "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?w=600&q=80",
+    ],
+    name: { ja: "xyz stay", en: "xyz stay" },
+    tagline: { ja: "グランピング感覚の都市型ステイ", en: "Urban glamping in the heart of Tokyo" },
+    checkin:  "16:00",
+    checkout: "10:00",
+    location: { ja: "台東区浅草橋", en: "Asakusabashi, Taito-ku" },
+    roomTypes: [
+      { label: { ja: "個室（ダブル）", en: "Private Double" }, price: { ja: "¥12,000〜", en: "From ¥12,000" } },
+      { label: { ja: "スイート", en: "Suite" }, price: { ja: "¥18,000〜", en: "From ¥18,000" } },
+    ],
+    description: {
+      ja: "アウトドアとモダンデザインが融合した、都市型グランピング宿泊施設。全室個室で、テント風の内装やナチュラルな素材使いが特徴。隅田川沿いの静かな立地で、浅草観光にも便利です。",
+      en: "A unique urban glamping experience blending outdoor aesthetics with modern design. All private rooms feature tent-inspired interiors and natural materials. Quietly situated near the Sumida River, yet perfect for Asakusa sightseeing."
+    },
+    features: {
+      ja: ["無料Wi-Fi", "全室個室", "テラス", "荷物預かり", "セルフチェックイン"],
+      en: ["Free Wi-Fi", "All Private Rooms", "Terrace", "Luggage Storage", "Self Check-in"]
+    },
+    bookingUrl: "https://forms.gle/XXXXXXXXXX",
+  },
+  {
+    id: "kuramae-stay",
+    area: "kuramae",
+    featured: true,
+    coverPhoto: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80",
+    photos: [
+      "https://images.unsplash.com/photo-1631049035182-249067d7618e?w=600&q=80",
+      "https://images.unsplash.com/photo-1555441736-aef5b95c77e4?w=600&q=80",
+      "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=600&q=80",
+    ],
+    name: { ja: "蔵前ステイ", en: "Kuramae Stay" },
+    tagline: { ja: "クリエイターの街に泊まる", en: "Sleep in Tokyo's creative quarter" },
+    checkin:  "15:00",
+    checkout: "11:00",
+    location: { ja: "台東区蔵前", en: "Kuramae, Taito-ku" },
+    roomTypes: [
+      { label: { ja: "ドミトリー（混合）", en: "Mixed Dorm" }, price: { ja: "¥3,200〜", en: "From ¥3,200" } },
+      { label: { ja: "個室（シングル）", en: "Private Single" }, price: { ja: "¥7,800〜", en: "From ¥7,800" } },
+    ],
+    description: {
+      ja: "近年注目を集める蔵前エリアに位置するゲストハウス。周辺にはクラフトショップやおしゃれなカフェが点在しており、観光だけでなくものづくりや散策を楽しみたい旅人に最適です。",
+      en: "Located in trendy Kuramae, surrounded by craft shops and stylish cafes. An ideal base for travelers interested in creativity, design, and leisurely exploration beyond typical tourist routes."
+    },
+    features: {
+      ja: ["無料Wi-Fi", "共用ラウンジ", "荷物預かり", "コーヒーサービス", "周辺マップ"],
+      en: ["Free Wi-Fi", "Shared Lounge", "Luggage Storage", "Coffee Service", "Area Map"]
+    },
+    bookingUrl: "https://forms.gle/XXXXXXXXXX",
+  },
+  {
+    id: "ueno-base",
+    area: "ueno",
+    featured: false,
+    coverPhoto: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80",
+    photos: [
+      "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=600&q=80",
+      "https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80",
+      "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?w=600&q=80",
+    ],
+    name: { ja: "上野ベース", en: "Ueno Base" },
+    tagline: { ja: "美術館・動物園・アメ横すぐそこ", en: "Museums, zoo, and Ameyoko at your doorstep" },
+    checkin:  "14:00",
+    checkout: "11:00",
+    location: { ja: "台東区上野", en: "Ueno, Taito-ku" },
+    roomTypes: [
+      { label: { ja: "ドミトリー（8床）", en: "8-Bed Dorm" }, price: { ja: "¥2,500〜", en: "From ¥2,500" } },
+      { label: { ja: "ドミトリー（4床）", en: "4-Bed Dorm" }, price: { ja: "¥3,200〜", en: "From ¥3,200" } },
+      { label: { ja: "個室（ダブル）", en: "Private Double" }, price: { ja: "¥9,500〜", en: "From ¥9,500" } },
+    ],
+    description: {
+      ja: "上野公園・上野動物園・東京国立博物館のすぐそばにある便利なゲストハウス。アメ横も徒歩圏内で、食べ歩きや買い物も充実。首都圏各地へのアクセスも抜群です。",
+      en: "Conveniently located steps from Ueno Park, Ueno Zoo, and the Tokyo National Museum. Ameyoko market is within walking distance, and transport connections to all parts of Tokyo are excellent."
+    },
+    features: {
+      ja: ["無料Wi-Fi", "共用キッチン", "ランドリー", "24時間チェックイン", "荷物預かり"],
+      en: ["Free Wi-Fi", "Shared Kitchen", "Laundry", "24h Check-in", "Luggage Storage"]
+    },
+    bookingUrl: "https://forms.gle/XXXXXXXXXX",
+  },
+];
+
+/* =============================================
+   ★ TRANSLATIONS — テキスト編集はここ ★
+   ============================================= */
+const I18N = {
+  ja: {
+    nav_home: "ホーム", nav_list: "宿泊施設", nav_about: "About", nav_contact: "お問い合わせ",
+    theme: "テーマ", theme_light: "ライト", theme_dark: "ダーク", theme_mono: "モノ",
+    hero_eyebrow: "Guesthouse Collection",
+    hero_title_html: '新しい人と<em>地域</em>に、<br>出会う入り口',
+    hero_sub: "個性豊かな宿泊施設をご紹介します。ドミトリーから個室まで、あなたのスタイルに合わせた滞在をどうぞ。",
+    hero_cta: "施設一覧を見る",
+    featured_eyebrow: "Featured", featured_title: "おすすめの施設", featured_sub: "各エリアの人気施設をピックアップしました。",
+    view_all: "すべて見る",
+    list_title: "宿泊施設一覧", list_sub: "東京の個性豊かなゲストハウス・ホステルをエリアから探せます",
+    area_all: "すべて", area_asakusa: "浅草", area_kuramae: "蔵前", area_ueno: "上野",area_asakusabashi: "浅草橋",
+    detail_checkin: "チェックイン", detail_checkout: "チェックアウト", detail_location: "エリア",
+    detail_book: "予約する", detail_price_note: "一泊あたりの料金", detail_book_note: "予約フォーム（Google Forms）に遷移します",
+    detail_features: "設備・サービス", detail_gallery: "ギャラリー",
+    about_eyebrow: "Our Story", about_title: "東京に根ざした\nゲストハウス文化を",
+    about_desc: "Hostel Lifeは、浅草・上野・蔵前を中心とした下町エリアで、旅人が本物の東京を体験できる場所を提供しています。",
+    about_s1_h: "下町の魅力を、そのままに", about_s1_p: "古くからの商店街や神社仏閣が残る浅草・蔵前エリア。その雰囲気を壊さず、むしろ引き立てるような宿泊施設を大切に選んでいます。",
+    about_s2_h: "旅人同士がつながる場所", about_s2_p: "ゲストハウスは単なる宿ではありません。世界中から集まる旅人、地域に暮らす人々、スタッフの交流が生まれる場です。",
+    value_eyebrow: "Values", value_title: "私たちが大切にすること",
+    val1_h: "Local First", val1_p: "地域の商店・飲食店・文化と連携し、本物の東京体験を届けます。",
+    val2_h: "Clean & Comfort", val2_p: "清潔さと快適さは最低限のおもてなし。細部まで丁寧に管理しています。",
+    val3_h: "Open to All", val3_p: "言語・国籍・バックグラウンドに関わらず、すべての旅人を歓迎します。",
+    contact_eyebrow: "Contact", contact_title: "お問い合わせ", contact_sub: "ご不明な点・宿泊についてのご相談はお気軽にどうぞ。",
+    contact_info_h: "連絡先", c_email: "Email", c_tel: "Tel", c_addr: "Address", c_addr_val: "〒111-0032 東京都台東区浅草X-X-X",
+    c_hours: "受付時間", c_hours_val: "8:00〜22:00（年中無休）",
+    contact_note: "宿泊予約は各施設の詳細ページからGoogleフォームにてお受けしています。",
+    form_title: "メッセージを送る", form_name: "お名前", form_email: "メールアドレス", form_subject: "件名", form_msg: "メッセージ", form_send: "送信する",
+    fs_booking: "宿泊について", fs_other: "その他",
+    footer_desc: "東京・下町エリアのゲストハウスをつなぐプラットフォーム。旅人と東京を、もっと近くに。",
+    footer_nav: "Navigation", footer_area: "エリア", footer_copy: "プライバシーポリシー",
+    back: "← 一覧に戻る",
+  },
+  en: {
+    nav_home: "Home", nav_list: "Properties", nav_about: "About", nav_contact: "Contact",
+    theme: "Theme", theme_light: "Light", theme_dark: "Dark", theme_mono: "Mono",
+    hero_eyebrow: "Tokyo Guesthouse Collection",
+    hero_title_html: 'Find your perfect<br><em>Tokyo stay</em>',
+    hero_sub: "Discover unique guesthouses and hostels in Asakusa, Ueno, and Kuramae — from dormitories to private rooms, tailored to your journey.",
+    hero_cta: "Browse Properties",
+    featured_eyebrow: "Featured", featured_title: "Recommended Stays", featured_sub: "Top picks from each neighborhood.",
+    view_all: "View All",
+    list_title: "All Properties", list_sub: "Find guesthouses and hostels across Tokyo's historic downtown areas",
+    area_all: "All", area_asakusa: "Asakusa", area_kuramae: "Kuramae", area_ueno: "Ueno",
+    detail_checkin: "Check-in", detail_checkout: "Check-out", detail_location: "Area",
+    detail_book: "Book Now", detail_price_note: "Price per night", detail_book_note: "You will be redirected to Google Forms",
+    detail_features: "Facilities & Services", detail_gallery: "Gallery",
+    about_eyebrow: "Our Story", about_title: "Celebrating Tokyo's\nGuesthouse Culture",
+    about_desc: "Hostel Life connects travelers with authentic guesthouses in Asakusa, Ueno, and Kuramae — where old Tokyo comes alive.",
+    about_s1_h: "Shitamachi Charm, Preserved", about_s1_p: "The neighborhoods of Asakusa and Kuramae retain the atmosphere of old Tokyo. We carefully select guesthouses that honor — rather than erase — that character.",
+    about_s2_h: "A Place to Connect", about_s2_p: "A guesthouse is more than a bed. It's where travelers from around the world, local residents, and passionate staff come together. Shared spaces and regular events spark unforgettable encounters.",
+    value_eyebrow: "Values", value_title: "What We Stand For",
+    val1_h: "Local First", val1_p: "We work with neighborhood shops, restaurants, and culture to deliver the real Tokyo experience.",
+    val2_h: "Clean & Comfort", val2_p: "Cleanliness and comfort are non-negotiable. Every detail is carefully managed.",
+    val3_h: "Open to All", val3_p: "Regardless of language, nationality, or background — every traveler is welcome.",
+    contact_eyebrow: "Contact", contact_title: "Get in Touch", contact_sub: "Questions about stays or anything else? We'd love to hear from you.",
+    contact_info_h: "Contact Info", c_email: "Email", c_tel: "Tel", c_addr: "Address", c_addr_val: "X-X-X Asakusa, Taito-ku, Tokyo 111-0032",
+    c_hours: "Hours", c_hours_val: "8:00 AM – 10:00 PM (daily)",
+    contact_note: "Reservations are accepted via Google Forms on each property's detail page.",
+    form_title: "Send a Message", form_name: "Your Name", form_email: "Email Address", form_subject: "Subject", form_msg: "Message", form_send: "Send Message",
+    fs_booking: "Reservation Inquiry", fs_other: "Other",
+    footer_desc: "A platform connecting travelers with Tokyo's best downtown guesthouses. Closer to the real Tokyo.",
+    footer_nav: "Navigation", footer_area: "Areas", footer_copy: "Privacy Policy",
+    back: "← Back to List",
+  }
+};
+
+const AREAS = [
+  { key: "all",      label: { ja: "すべて",  en: "All" } },
+  { key: "asakusa",  label: { ja: "浅草",    en: "Asakusa" } },
+  { key: "kuramae",  label: { ja: "蔵前",    en: "Kuramae" } },
+  { key: "ueno",     label: { ja: "上野",    en: "Ueno" } },
+];
+
+/* =============================================
+   STATE
+   ============================================= */
+let currentLang  = 'ja';
+let currentTheme = 'light';
+let currentArea  = 'all';
+let currentPage  = 'home';
+
+/* =============================================
+   INIT
+   ============================================= */
+document.addEventListener('DOMContentLoaded', () => {
+  buildAreaTabs();
+  buildFeaturedGrid();
+  buildListingGrid();
+  buildFooterAreas();
+  applyLang();
+  showPage('home');
+});
+
+/* =============================================
+   NAVIGATION
+   ============================================= */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page-' + id);
+  if (target) { target.classList.add('active'); currentPage = id; }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeMobileMenu();
+  // animate cards
+  setTimeout(() => {
+    document.querySelectorAll('#page-' + id + ' .property-card, #page-' + id + ' .fade-in').forEach((el,i) => {
+      el.style.animation = 'none';
+      el.offsetHeight;
+      el.style.animation = `fadeUp 0.5s ease ${i * 0.07}s both`;
+    });
+  }, 50);
+}
+
+/* =============================================
+   LANGUAGE
+   ============================================= */
+function toggleLang() {
+  currentLang = currentLang === 'ja' ? 'en' : 'ja';
+  applyLang();
+}
+
+function applyLang() {
+  document.body.classList.toggle('lang-ja', currentLang === 'ja');
+  document.documentElement.lang = currentLang;
+
+  const langBtn = document.getElementById('langBtn');
+  const langBtnM = document.getElementById('langBtnMobile');
+  if (langBtn)  langBtn.textContent  = currentLang === 'ja' ? 'EN' : 'JP';
+  if (langBtnM) langBtnM.textContent = currentLang === 'ja' ? 'EN' : 'JP';
+
+  // translate static elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = I18N[currentLang][key];
+    if (!val) return;
+    if (key.endsWith('_html')) { el.innerHTML = val; }
+    else { el.textContent = val; }
+  });
+
+  // rebuild dynamic content
+  buildAreaTabs();
+  buildFeaturedGrid();
+  buildListingGrid();
+  buildFooterAreas();
+
+  // if on detail page, re-render
+  if (currentPage === 'detail' && window._currentDetailId) {
+    renderDetail(window._currentDetailId);
+  }
+}
+
+/* =============================================
+   THEME
+   ============================================= */
+function toggleThemeMenu() {
+  document.getElementById('themeMenu').classList.toggle('open');
+}
+
+function setTheme(t) {
+  currentTheme = t;
+  if (t === 'light') {
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', t);
+  }
+  document.getElementById('themeMenu').classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.theme-picker')) {
+    document.getElementById('themeMenu').classList.remove('open');
+  }
+});
+
+/* =============================================
+   MOBILE MENU
+   ============================================= */
+function toggleMobileMenu() {
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
+function closeMobileMenu() {
+  document.getElementById('mobileMenu').classList.remove('open');
+}
+
+/* =============================================
+   AREA TABS
+   ============================================= */
+function buildAreaTabs() {
+  const container = document.getElementById('areaTabs');
+  if (!container) return;
+  container.innerHTML = AREAS.map(a => `
+    <button class="area-tab ${currentArea === a.key ? 'active' : ''}"
+            onclick="filterArea('${a.key}')">
+      ${a.label[currentLang]}
+    </button>
+  `).join('');
+}
+
+function filterArea(area) {
+  currentArea = area;
+  buildAreaTabs();
+  buildListingGrid();
+}
+
+/* =============================================
+   LISTING GRID
+   ============================================= */
+function buildListingGrid() {
+  const grid = document.getElementById('listingGrid');
+  if (!grid) return;
+  const filtered = currentArea === 'all' ? PROPERTIES : PROPERTIES.filter(p => p.area === currentArea);
+  grid.innerHTML = filtered.map(p => propertyCardHTML(p)).join('');
+}
+
+function buildFeaturedGrid() {
+  const grid = document.getElementById('featuredGrid');
+  if (!grid) return;
+  grid.innerHTML = PROPERTIES.filter(p => p.featured).map(p => propertyCardHTML(p)).join('');
+}
+
+function propertyCardHTML(p) {
+  const areaKey = 'area_' + p.area;
+  const areaLabel = I18N[currentLang][areaKey] || p.area;
+  const roomTypesHTML = p.roomTypes.map(r =>
+    `<span class="type-pill">${r.label[currentLang]}</span>`
+  ).join('');
+  return `
+    <div class="property-card" onclick="openDetail('${p.id}')">
+      <div class="card-thumb">
+        <img src="${p.coverPhoto}" alt="${p.name[currentLang]}" loading="lazy">
+        <span class="card-badge">${areaLabel}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-area">${areaLabel}</div>
+        <div class="card-name">${p.name[currentLang]}</div>
+        <div class="card-meta">
+          <span class="card-meta-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            CI ${p.checkin} / CO ${p.checkout}
+          </span>
+          <span class="card-meta-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${p.location[currentLang]}
+          </span>
+        </div>
+        <div class="card-types">${roomTypesHTML}</div>
+      </div>
+    </div>`;
+}
+
+/* =============================================
+   DETAIL
+   ============================================= */
+function openDetail(id) {
+  window._currentDetailId = id;
+  renderDetail(id);
+  showPage('detail');
+}
+
+function renderDetail(id) {
+  const p = PROPERTIES.find(x => x.id === id);
+  if (!p) return;
+  const t = I18N[currentLang];
+  const areaLabel = t['area_' + p.area] || p.area;
+
+  const photosHTML = p.photos.length ? `
+    <div class="gallery-strip">
+      ${p.photos.map(src => `<img src="${src}" alt="" loading="lazy">`).join('')}
+    </div>` : '';
+
+  const roomTypesHTML = p.roomTypes.map(r => `
+    <div class="room-type-row">
+      <span>${r.label[currentLang]}</span>
+      <span>${r.price[currentLang]}</span>
+    </div>`).join('');
+
+  const featuresHTML = p.features[currentLang].map(f => `<li>${f}</li>`).join('');
+
+  document.getElementById('detailContent').innerHTML = `
+    <button class="detail-back" onclick="showPage('listing')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      ${t.back}
+    </button>
+
+    <div class="detail-hero">
+      <img src="${p.coverPhoto}" alt="${p.name[currentLang]}">
+    </div>
+
+    <div class="detail-layout">
+      <div>
+        <div class="detail-area-label">${areaLabel}</div>
+        <h1 class="detail-title">${p.name[currentLang]}</h1>
+        <p style="color:var(--text-sub); font-style:italic; margin-bottom:20px; font-family:var(--font-en); font-size:17px;">${p.tagline[currentLang]}</p>
+
+        <div class="detail-meta-row">
+          <div class="detail-meta-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div><strong>${t.detail_checkin}</strong> <span>${p.checkin}</span></div>
+          </div>
+          <div class="detail-meta-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 8 14"/></svg>
+            <div><strong>${t.detail_checkout}</strong> <span>${p.checkout}</span></div>
+          </div>
+          <div class="detail-meta-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <div><strong>${t.detail_location}</strong> <span>${p.location[currentLang]}</span></div>
+          </div>
+        </div>
+
+        <p class="detail-desc">${p.description[currentLang]}</p>
+
+        ${photosHTML}
+
+        <div class="detail-features">
+          <h3>${t.detail_features}</h3>
+          <ul class="feature-list">${featuresHTML}</ul>
+        </div>
+      </div>
+
+      <div class="detail-sidebar">
+        <div class="booking-card">
+          <h3>${t.detail_book}</h3>
+          <p class="price-note">${t.detail_price_note}</p>
+          <div class="room-types">${roomTypesHTML}</div>
+          <a class="book-btn" href="${p.bookingUrl}" target="_blank" rel="noopener">
+            ${t.detail_book}
+          </a>
+          <p class="booking-note">${t.detail_book_note}</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* =============================================
+   FOOTER AREAS
+   ============================================= */
+function buildFooterAreas() {
+  const el = document.getElementById('footerAreas');
+  if (!el) return;
+  el.innerHTML = AREAS.filter(a => a.key !== 'all').map(a => `
+    <li><a onclick="filterArea('${a.key}'); showPage('listing');">${a.label[currentLang]}</a></li>
+  `).join('');
+}
+</script>
+</body>
+</html>
